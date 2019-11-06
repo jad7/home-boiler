@@ -1,0 +1,59 @@
+components:
+  relay:
+    boiler:
+      main.pin: 0
+      offstate.pin: 4
+  mcp3208:
+    voltage: 3.3
+    ch0:
+      sensor: temperature
+      enabled: true
+      params:
+        #b: 3950
+        b: 3380 #7490
+        #b: 7490
+        bResistance: 10000
+        bTemperature: 25
+        shoulderResistor: 10000
+        cacheValues: true
+    ch1:
+      sensor: temperature
+      enabled: true
+      params:
+        #b: 3950
+        b: 4480
+        #b: 7030 #7030
+        #bResistance: 12443.83
+        #1bResistance: 3036
+        bResistance: 13460
+        #bTemperature: 21.64
+        #1bTemperature: 54
+        bTemperature: 22
+        shoulderResistor: 10000
+        cacheValues: true
+    enabled: true
+    spi: 0
+    spi.speed: 1000000
+
+config:
+  temperature:
+    manual.duration.minutes: 360
+    atHome:
+      min: 21
+      max: 23
+    min: 20
+    max: 21
+  display:
+    script.path: /home/pi/raspberrypi-python-tm1637/boiler.py
+  periods:
+    atHome:
+      working: -01:00;08:00-12:00;20:00-;
+      weekend: 08:00-;-01:00
+
+debug: false
+local.storage.file: configs.db
+server:
+  url: http://boiler-server.herokuapp.com
+  #url: http://192.168.0.103:8080
+  path: /boiler/v1/setStatus
+  update.interval.seconds: 60
