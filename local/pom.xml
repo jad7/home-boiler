@@ -26,11 +26,7 @@
             <version>1.18.10</version>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>19.0-rc3</version>
-        </dependency>
+
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
@@ -106,6 +102,28 @@
                     <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
+
+            <!--<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                &lt;!&ndash;<transformer implementation="org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer"/>&ndash;&gt;
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/services/java.sql.Driver</resource>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>-->
         </plugins>
     </build>
 

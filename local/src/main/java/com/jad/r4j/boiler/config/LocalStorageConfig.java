@@ -3,6 +3,8 @@ package com.jad.r4j.boiler.config;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Named;
+import java.io.File;
+import java.io.IOException;
 import java.sql.*;
 import java.util.function.Supplier;
 
@@ -18,10 +20,16 @@ public class LocalStorageConfig implements Destroyable {
 
         connectionSupplier = () -> {
             try {
+                File file = new File(fileName);
+                if (!file.exists()) {
+                    file.createNewFile();
+                }
                 return DriverManager.getConnection("jdbc:sqlite:" + fileName);
             } catch (SQLException e) {
                 log.error("DB exception", e);
                 throw new CreationException("Can not create connection to DB", e);
+            } catch (IOException e) {
+                throw new RuntimeException("DB file problem", e);
             }
         };
         connectionCache[0] = connectionSupplier.get();

@@ -37,6 +37,8 @@ public class ConfigurationParent implements Configuration {
             log.debug("Key {} has not updated, value the same", key);
          }
          return;
+      } else {
+         merged.put(key, newValue);
       }
       String[] split = StringUtils.split(key, '.');
       Tuple<String, ?> tuple = new Tuple<>(key, value);
