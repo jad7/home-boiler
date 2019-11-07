@@ -2,10 +2,12 @@ package com.jad.r4j.boiler.config;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.*;
@@ -13,15 +15,21 @@ import static org.junit.Assert.*;
 public class SystemConfigTest {
 
     private static final String EXAMPLE_KEY = "components.relay.boiler.offstate.pin";
+    private static final String TEST_DB_FILE = "test.db";
     private Injector configInjector;
     private LocalStorageConfig localStorageConfig;
     private Configuration config;
 
     @Before
     public void setUp() throws Exception {
+        tearDown();
+        init();
+    }
+
+    private void init() throws Exception {
         configInjector = Guice.createInjector(new SystemConfig());
         config = configInjector.getInstance(Configuration.class);
-        localStorageConfig = new LocalStorageConfig("test.db", config);
+        localStorageConfig = new LocalStorageConfig(TEST_DB_FILE, config);
     }
 
     @Test
@@ -38,7 +46,15 @@ public class SystemConfigTest {
         config.update(EXAMPLE_KEY, Integer.class, newVal);
         Assert.assertTrue("Listener not working", atomicBoolean.get());
         localStorageConfig.destroy();
-        setUp();
+        init();
         Assert.assertEquals(newVal, config.getInt(EXAMPLE_KEY));
+    }
+
+    @After
+    public void tearDown() {
+        File file = new File(TEST_DB_FILE);
+        if (file.exists()) {
+            file.delete();
+        }
     }
 }

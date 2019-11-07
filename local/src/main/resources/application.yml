@@ -2,7 +2,7 @@ components:
   relay:
     boiler:
       main.pin: 0
-      offstate.pin: 4
+      pump.pin: 4
   mcp3208:
     voltage: 3.3
     ch0:

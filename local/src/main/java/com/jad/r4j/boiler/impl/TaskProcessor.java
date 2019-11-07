@@ -8,7 +8,7 @@ import javax.inject.Singleton;
 
 @Singleton
 public class TaskProcessor {
-   private PriorityQueue<TaskProcessor.Task> taskSet = new PriorityQueue();
+   private PriorityQueue<TaskProcessor.Task> taskSet = new PriorityQueue<>();
 
    public TaskProcessor() {
    }
@@ -25,15 +25,15 @@ public class TaskProcessor {
       AtomicReference<Runnable> runnableAtomicReference = new AtomicReference();
       runnableAtomicReference.set(() -> {
          runnable.run();
-         this.schedule((Runnable)runnableAtomicReference.get(), timeUnitValue, timeUnit);
+         this.schedule(runnableAtomicReference.get(), timeUnitValue, timeUnit);
       });
-      this.schedule((Runnable)runnableAtomicReference.get(), timeUnitValue, timeUnit);
+      this.schedule(runnableAtomicReference.get(), timeUnitValue, timeUnit);
    }
 
    public void processTasks() throws InterruptedException {
       TaskProcessor.Task pool;
       for(; !Thread.currentThread().isInterrupted(); pool.taskRunnable.run()) {
-         pool = (TaskProcessor.Task)this.taskSet.poll();
+         pool = this.taskSet.poll();
          long wait = pool.when - System.currentTimeMillis();
          if (wait > 0L) {
             Thread.sleep(wait);
