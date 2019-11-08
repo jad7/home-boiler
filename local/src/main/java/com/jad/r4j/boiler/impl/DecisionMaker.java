@@ -18,7 +18,7 @@ public class DecisionMaker implements Initiable {
    private SensorsProvider sensorsProvider;
    private Provider<DynamicConfigurationHolder> config;
    private TaskProcessor taskProcessor;
-   private AtomicReference<DateProcessor> dateProcessorRef = new AtomicReference();
+   private AtomicReference<DateProcessor> dateProcessorRef = new AtomicReference<>();
 
    @Inject
    public DecisionMaker(SensorsProvider sensorsProvider, Provider<DynamicConfigurationHolder> config, TaskProcessor taskProcessor) {
@@ -27,32 +27,32 @@ public class DecisionMaker implements Initiable {
       this.taskProcessor = taskProcessor;
    }
 
-   public void init() throws Exception {
-      BoilerSchedule boilerSchedule = ((DynamicConfigurationHolder)this.config.get()).getBoilerSchedule();
+   public void init() {
+      BoilerSchedule boilerSchedule = (this.config.get()).getBoilerSchedule();
       this.dateProcessorRef.set(new DateProcessor(boilerSchedule));
-      this.taskProcessor.scheduleRepitedForever(() -> {
-         DateProcessor dateProcessor = (DateProcessor)this.dateProcessorRef.get();
+      this.taskProcessor.scheduleRepeatable(() -> {
+         DateProcessor dateProcessor = this.dateProcessorRef.get();
          boolean atHome = dateProcessor.isInRangeNow();
-         ((DynamicConfigurationHolder)this.config.get()).setAnyBodyAtHomeAutomatic(atHome);
+         (this.config.get()).setAnyBodyAtHomeAutomatic(atHome);
       }, 1L, TimeUnit.MINUTES);
    }
 
    @Schedule(10000)
    public void doDecision() {
       double currentTemp = this.sensorsProvider.getCurrentRoomTemperature();
-      DynamicConfigurationHolder holder = (DynamicConfigurationHolder)this.config.get();
+      DynamicConfigurationHolder holder = this.config.get();
       boolean anyAtHome = holder.isAnyBodyAtHome();
       if (ConfigurationParent.debug) {
-         log.info((String)"Home temperature {} at home: {}", (Object)currentTemp, (Object)anyAtHome);
+         log.info("Home temperature {} at home: {}", currentTemp, anyAtHome);
       }
 
       if (this.sensorsProvider.isBoilerOff()) {
          if (currentTemp <= holder.minWhenNotAtHomeTemperature() || anyAtHome && currentTemp <= holder.minWhenAtHomeTemperature()) {
-            log.info((String)"Home temperature {} at home: {} boiler switched to ON", (Object)currentTemp, (Object)anyAtHome);
+            log.info("Home temperature {} at home: {} boiler switched to ON", currentTemp, anyAtHome);
             this.sensorsProvider.boilerTurnOn();
          }
       } else if (anyAtHome && currentTemp >= holder.maxWhenAtHomeTemperature() || !anyAtHome && currentTemp >= holder.maxWhenNotAtHomeTemperature()) {
-         log.info((String)"Home temperature {} at home: {} boiler switched to OFF", (Object)currentTemp, (Object)anyAtHome);
+         log.info("Home temperature {} at home: {} boiler switched to OFF", currentTemp, anyAtHome);
          this.sensorsProvider.boilerTurnOff();
       }
 

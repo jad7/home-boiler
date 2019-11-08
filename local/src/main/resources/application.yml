@@ -1,4 +1,5 @@
 components:
+  ac.stat.pin: 5
   relay:
     boiler:
       main.pin: 0
@@ -37,6 +38,8 @@ components:
 
 config:
   temperature:
+    refresh.ms: 400
+    timeline.buffer.minutes: 60
     manual.duration.minutes: 360
     atHome:
       min: 21

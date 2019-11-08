@@ -3,17 +3,17 @@ package com.jad.r4j.boiler.config;
 import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
 import com.google.inject.Key;
+import com.google.inject.Scopes;
 import com.google.inject.name.Names;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
+import java.util.*;
 
 import com.jad.r4j.boiler.utils.NamedImpl;
+import org.apache.commons.lang3.StringUtils;
 import org.yaml.snakeyaml.Yaml;
+
+import javax.inject.Provider;
 
 public class SystemConfig extends AbstractModule {
    public SystemConfig() {
@@ -52,14 +52,19 @@ public class SystemConfig extends AbstractModule {
             final ConfigurationParent parentConfig = new ConfigurationParent(merged);
             bind(Configuration.class).toInstance(parentConfig);
             Binder binder = binder().skipSources(Names.class);
+            Set<String> paths = new HashSet<>();
             for (Map.Entry<String, String> entry : merged.entrySet()) {
                String key = entry.getKey();
+               paths.addAll(extractPaths(key));
                binder.bind(Key.get(String.class, new NamedImpl(key)))
                        .toProvider(() -> parentConfig.getStr(key))
                ;
             }
-
-
+            for (String path : paths) {
+               binder.bind(Key.get(String.class, new NamedImpl(path)))
+                       .toProvider((Provider)() -> parentConfig.getConfigByPrefix(path))
+                       .in(Scopes.SINGLETON);
+            }
 
 
          } /*catch (Throwable var17) {
@@ -85,6 +90,21 @@ public class SystemConfig extends AbstractModule {
       /*} catch (IOException var19) {
          throw new RuntimeException("Exception on loading properties", var19);
       }*/
+   }
+
+   private Collection<? extends String> extractPaths(String key) {
+      if (key == null || key.isEmpty()) {
+         return Collections.emptyList();
+      }
+      String[] split = StringUtils.split(key, '.');
+      if (split.length < 2) {
+         return Collections.emptyList();
+      }
+      List<String> objects = new ArrayList<>(split.length - 1);
+      for (int i = 0; i < split.length - 1; i++) {
+         objects.add(split[i]);
+      }
+      return objects;
    }
 
    private void merge(Map<String, String> to, Properties from) {

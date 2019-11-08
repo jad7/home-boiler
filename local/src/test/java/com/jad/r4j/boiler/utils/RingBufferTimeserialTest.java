@@ -60,4 +60,20 @@ public class RingBufferTimeserialTest {
         Assert.assertEquals(realRangeMax, rangeMax, 0);
 
     }
+
+    @Test
+    public void findAvgOverflow() {
+        RingBufferTimeserial rb = new RingBufferTimeserial(50);
+        int size = (int) (50 + Math.random() * 50);
+        List<Double> list = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            double val = Math.random() * 10000;
+            list.add(val);
+            rb.add(10_000 + (i * 1000) + (long) (Math.random() * 1000), val);
+        }
+        list = list.subList(list.size() - 50, list.size());
+        Double realAvg = list.stream().mapToDouble(Double::doubleValue).average().getAsDouble();
+        double avg = rb.avg(999);
+        Assert.assertEquals(realAvg, avg, 0.0001);
+    }
 }

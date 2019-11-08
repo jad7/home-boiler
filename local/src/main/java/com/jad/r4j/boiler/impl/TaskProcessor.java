@@ -21,8 +21,8 @@ public class TaskProcessor {
       this.taskSet.offer(task);
    }
 
-   public void scheduleRepitedForever(Runnable runnable, long timeUnitValue, TimeUnit timeUnit) {
-      AtomicReference<Runnable> runnableAtomicReference = new AtomicReference();
+   public void scheduleRepeatable(Runnable runnable, long timeUnitValue, TimeUnit timeUnit) {
+      AtomicReference<Runnable> runnableAtomicReference = new AtomicReference<>();
       runnableAtomicReference.set(() -> {
          runnable.run();
          this.schedule(runnableAtomicReference.get(), timeUnitValue, timeUnit);
@@ -34,9 +34,11 @@ public class TaskProcessor {
       TaskProcessor.Task pool;
       for(; !Thread.currentThread().isInterrupted(); pool.taskRunnable.run()) {
          pool = this.taskSet.poll();
-         long wait = pool.when - System.currentTimeMillis();
-         if (wait > 0L) {
-            Thread.sleep(wait);
+         if (pool != null) {
+            long wait = pool.when - System.currentTimeMillis();
+            if (wait > 0L) {
+               Thread.sleep(wait);
+            }
          }
       }
 

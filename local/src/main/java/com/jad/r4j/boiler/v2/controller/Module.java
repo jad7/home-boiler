@@ -88,6 +88,14 @@ public class Module extends AbstractModule {
         return new TM1637Python(new File(path));
     }
 
+    @Provides
+    @Named("gasStat")
+    public Provider<Boolean> gasStat(@Named("components.ac.stat.pin") int pinNum, GpioController gpioController) {
+        Pin pin = RaspiPin.getPinByAddress(pinNum);
+        GpioPinDigitalInput digitalInput = gpioController.provisionDigitalInputPin(pin);
+        return digitalInput::isHigh;
+    }
+
 
     @Override
     protected void configure() {

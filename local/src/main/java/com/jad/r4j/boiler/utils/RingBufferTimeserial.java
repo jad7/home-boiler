@@ -37,10 +37,13 @@ public class RingBufferTimeserial {
       }
    }
 
-   public double findMax(long fromTime) {
+   public Double findMax(long fromTime) {
       int index = findIndex(fromTime);
       if (index < 0) {
          index = ~index;
+      }
+      if (index == size) {
+         return null;
       }
       double max = Double.MIN_VALUE;
       for (int i = index; i < size; i++) {
@@ -49,7 +52,7 @@ public class RingBufferTimeserial {
       return max;
    }
 
-   public double findMax(int val, TimeUnit unit) {
+   public Double findMax(int val, TimeUnit unit) {
       return findMax(System.currentTimeMillis() - unit.toMillis(val));
    }
 
@@ -76,23 +79,25 @@ public class RingBufferTimeserial {
       return (ind + position) % size;
    }
 
-   private static int binarySearch0(long[] a, int fromIndex, int toIndex,
-                                    long key) {
-      int low = fromIndex;
-      int high = toIndex - 1;
 
-      while (low <= high) {
-         int mid = (low + high) >>> 1;
-         long midVal = a[mid];
+   public Double avg(int forLast, TimeUnit timeUnit) {
+      return avg(System.currentTimeMillis() - timeUnit.toMillis(forLast));
+   }
 
-         if (midVal < key)
-            low = mid + 1;
-         else if (midVal > key)
-            high = mid - 1;
-         else
-            return mid; // key found
+   public Double avg(long time) {
+      int index = findIndex(time);
+      if (index < 0) {
+         index = ~index;
       }
-      return -(low + 1);  // key not found.
+      double avg = 0;
+      int count = size - index;
+      if (count == 0) {
+         return null;
+      }
+      for (int i = index; i < size; i++) {
+         avg += array[toIndx(i)].value / count;
+      }
+      return avg;
    }
 
 
