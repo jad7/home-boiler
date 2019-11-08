@@ -1,13 +1,17 @@
 package com.jad.r4j.boiler.v2.controller;
 
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.function.Consumer;
 
+@Singleton
 public class RelaysService {
 
     private Relay boiler;
     private Relay pump;
 
+    @Inject
     public RelaysService(
             com.pi4j.component.relay.Relay boiler,
             com.pi4j.component.relay.Relay pump) {

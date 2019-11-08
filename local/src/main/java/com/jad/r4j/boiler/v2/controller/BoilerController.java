@@ -1,22 +1,31 @@
 package com.jad.r4j.boiler.v2.controller;
 
 
+import com.jad.r4j.boiler.impl.TaskProcessor;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.concurrent.TimeUnit;
 
+@Singleton
 public class BoilerController {
 
     private RelaysService relaysService;
     private TemperatureService temperatureService;
 
-    public BoilerController(RelaysService relaysService, TemperatureService temperatureService) {
+    @Inject
+    public BoilerController(RelaysService relaysService,
+                            TemperatureService temperatureService,
+                            TaskProcessor taskProcessor) {
         this.relaysService = relaysService;
         this.temperatureService = temperatureService;
+        taskProcessor.scheduleRepeatable(this::onControl, 10, TimeUnit.SECONDS);
     }
 
     private Mode mode;
     private Stat stat;
 
-    public void onControl() {
+    private void onControl() {
         getMode().onStatus(this);
     }
 

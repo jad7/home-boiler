@@ -6,6 +6,7 @@ import com.jad.r4j.boiler.impl.sensor.AbstractTemprSensor;
 import com.jad.r4j.boiler.utils.Range;
 import com.jad.r4j.boiler.utils.RingBufferTimeserial;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.concurrent.TimeUnit;
@@ -16,6 +17,7 @@ public class TemperatureService {
     private final RingBufferTimeserial roomTS;
     private final RingBufferTimeserial waterTS;
 
+    @Inject
     public TemperatureService(final @Named("roomTemp") AbstractTemprSensor roomSensor,
                               final @Named("waterTemp") AbstractTemprSensor waterSensor,
                               @Named("config.temperature") Configuration configuration,
