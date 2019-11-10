@@ -1,6 +1,7 @@
 package com.jad.r4j.boiler.v2.controller;
 
 
+import com.jad.r4j.boiler.config.Configuration;
 import com.jad.r4j.boiler.impl.TaskProcessor;
 
 import javax.inject.Inject;
@@ -10,15 +11,18 @@ import java.util.concurrent.TimeUnit;
 @Singleton
 public class BoilerController {
 
-    private RelaysService relaysService;
-    private TemperatureService temperatureService;
+    private final RelaysService relaysService;
+    private final TemperatureService temperatureService;
+    private final Configuration configuration;
 
     @Inject
     public BoilerController(RelaysService relaysService,
                             TemperatureService temperatureService,
-                            TaskProcessor taskProcessor) {
+                            TaskProcessor taskProcessor,
+                            Configuration configuration) {
         this.relaysService = relaysService;
         this.temperatureService = temperatureService;
+        this.configuration = configuration;
         taskProcessor.scheduleRepeatable(this::onControl, 10, TimeUnit.SECONDS);
     }
 
@@ -32,6 +36,7 @@ public class BoilerController {
     public void changeMode(Mode mode) {
         if (mode != this.mode) {
             this.mode = mode;
+            configuration.update(Configuration.CURRENT_MODE_KEY, String.class, mode.name());
             this.mode.onSet(this);
         }
     }
@@ -47,6 +52,7 @@ public class BoilerController {
     private void changeState(Stat stat) {
         if (this.stat != stat) {
             this.stat = stat;
+            configuration.update(Configuration.CURRENT_STATE_KEY, String.class, stat.name());
             stat.onSet(this);
         }
     }
@@ -155,8 +161,7 @@ public class BoilerController {
     }
 
     private boolean isHeaterOn() {
-        //TODO impl
-        return false;
+        return relaysService.isHeaterOn();
     }
 
 

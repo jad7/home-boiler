@@ -1,5 +1,6 @@
 package com.jad.r4j.boiler.impl.sensor;
 
+import com.jad.r4j.boiler.utils.Functions;
 import com.pi4j.component.temperature.TemperatureSensorBase;
 
 public abstract class AbstractTemprSensor extends TemperatureSensorBase {
@@ -7,6 +8,6 @@ public abstract class AbstractTemprSensor extends TemperatureSensorBase {
    }
 
    public double getTemperatureRounded() {
-      return (double)Math.round(this.getTemperature() * 100.0D) / 100.0D;
+      return Functions.round(this.getTemperature());
    }
 }

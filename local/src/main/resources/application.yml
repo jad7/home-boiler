@@ -57,6 +57,8 @@ debug: false
 local.storage.file: configs.db
 server:
   url: http://boiler-server.herokuapp.com
+  login: pi
+  pass: unknown
   #url: http://192.168.0.103:8080
   path: /boiler/v1/setStatus
   update.interval.seconds: 60

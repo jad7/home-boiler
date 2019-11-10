@@ -11,6 +11,10 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.concurrent.TimeUnit;
 
+import static com.jad.r4j.boiler.config.Configuration.CURRENT_ROOM_TEMP_KEY;
+import static com.jad.r4j.boiler.config.Configuration.CURRENT_WATER_TEMP_KEY;
+import static com.jad.r4j.boiler.utils.Functions.round;
+
 @Singleton
 public class TemperatureService {
 
@@ -32,6 +36,14 @@ public class TemperatureService {
             roomTS.add(roomSensor.getTemperatureRounded());
             waterTS.add(waterSensor.getTemperatureRounded());
         }, refreshIntervalMs, TimeUnit.MILLISECONDS);
+        taskProcessor.scheduleRepeatable(() -> {
+            configuration.update(CURRENT_ROOM_TEMP_KEY, Double.class,
+                    round(roomTS.avg(10, TimeUnit.SECONDS)));
+        }, 10, TimeUnit.SECONDS);
+        taskProcessor.scheduleRepeatable(() -> {
+            configuration.update(CURRENT_WATER_TEMP_KEY, Double.class,
+                    round(waterTS.avg(10, TimeUnit.SECONDS)));
+        }, 10, TimeUnit.SECONDS);
     }
 
     public Range<Double> getExpectedNowRange() {

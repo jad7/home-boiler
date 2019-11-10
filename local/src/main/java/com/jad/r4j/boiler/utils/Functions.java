@@ -23,4 +23,8 @@ public class Functions {
     public static <P1, P2> Consumer<P1> curry2C(BiConsumer<P1, P2> consumer, P2 p2) {
         return (p1) -> consumer.accept(p1, p2);
     }
+
+    public static double round(double val) {
+        return (double)Math.round(val * 100.0D) / 100.0D;
+    }
 }
