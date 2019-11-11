@@ -122,22 +122,6 @@ public class BoilerController {
             }
         },
 
-        TURNED_OFF {
-            @Override
-            void onStatus(BoilerController controller) {
-                TemperatureService temperatureService = controller.temperatureService;
-                if (temperatureService.getExpectedNowRange().min() >= temperatureService.getAvgRoomTemperature(1, TimeUnit.MINUTES)) {
-                    controller.changeState(HEATING);
-                }
-            }
-
-            @Override
-            void onSet(BoilerController controller) {
-                controller.relays().boiler().off();
-                controller.relays().pump().auto();
-            }
-        },
-
         COOLING_DOWN {
             @Override
             void onStatus(BoilerController controller) {
@@ -154,7 +138,26 @@ public class BoilerController {
                 controller.relays().boiler().off();
                 controller.relays().pump().on();
             }
-        };
+        },
+
+        TURNED_OFF {
+            @Override
+            void onStatus(BoilerController controller) {
+                TemperatureService temperatureService = controller.temperatureService;
+                if (temperatureService.getExpectedNowRange().min() >= temperatureService.getAvgRoomTemperature(1, TimeUnit.MINUTES)) {
+                    controller.changeState(HEATING);
+                }
+            }
+
+            @Override
+            void onSet(BoilerController controller) {
+                controller.relays().boiler().off();
+                controller.relays().pump().auto();
+            }
+        },
+
+
+        ;
 
         abstract void onStatus(BoilerController controller);
         abstract void onSet(BoilerController controller);

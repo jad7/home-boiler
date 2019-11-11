@@ -1,6 +1,7 @@
 package com.jad.r4j.boiler.impl.sensor;
 
 
+import com.jad.r4j.boiler.utils.Functions;
 import com.pi4j.io.serial.Baud;
 import com.pi4j.io.serial.DataBits;
 import com.pi4j.io.serial.Parity;
@@ -13,7 +14,10 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public class MHZ19 implements AutoCloseable {
-    public static final byte[] DATA = new byte[]{-1, 1, -122, 0, 0, 0, 0, 0, 121};
+    public static final byte[] DATA = Functions.toBytes( 0xff, 1, 0x86, 0, 0, 0, 0, 0, 0x79);
+    public static final byte[] CALIBRATE_Z = Functions.toBytes( 0xff, 1, 0x87, 0, 0, 0, 0, 0, 0x78);
+    public static final byte[] CALIBRATE_SPAN = Functions.toBytes( 0xff, 1, 0x88, 0x07, 0, 0, 0, 0, 0xA0);
+    //public static final byte[] DATA = new byte[]{-1, 1, -122, 0, 0, 0, 0, 0, 121};
     final Serial serial = SerialFactory.createInstance();
 
     public MHZ19() {
@@ -44,7 +48,10 @@ public class MHZ19 implements AutoCloseable {
                     byte[] read = this.serial.read(available);
                     System.out.println("Have readed:" + available);
                     System.out.println("Result bytes:" + Arrays.toString(read));
-                    if (read.length > 4 && read[0] == 255 && read[1] == 134 && this.checkSum(read)) {
+                    if (read.length > 4
+                            && read[0] == 0xff
+                            && read[1] == 134
+                            && checkSum(read) == read[read.length - 1]) {
                         return (read[2] & 255) << 8 & read[3];
                     }
                 } else {
@@ -63,7 +70,7 @@ public class MHZ19 implements AutoCloseable {
     }
 
     public void close() {
-        if (this.serial != null && this.serial.isOpen()) {
+        if (serial.isOpen()) {
             try {
                 this.serial.close();
             } catch (IOException var2) {
@@ -73,9 +80,14 @@ public class MHZ19 implements AutoCloseable {
 
     }
 
-    private boolean checkSum(byte[] read) {
-        System.out.println(Arrays.toString(read));
-        return true;
+    private byte checkSum(byte[] packet) {
+        int checksum = 0;
+        for(int i = 1; i < 8; i++) {
+            checksum += packet[i];
+        }
+        checksum = 0xff - checksum;
+        checksum += 1;
+        return (byte) checksum;
     }
 
     public static void main(String[] args) throws IOException {

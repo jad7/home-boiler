@@ -23,6 +23,7 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 @Slf4j
 public class Module extends AbstractModule {
@@ -84,7 +85,7 @@ public class Module extends AbstractModule {
     @Singleton
     @Provides
     @Named("tm1637Dispay")
-    public TM1637Python dispay(@Named("config.display.script.path") String path) {
+    public TM1637Python display(@Named("config.display.script.path") String path) {
         return new TM1637Python(new File(path));
     }
 
@@ -96,10 +97,5 @@ public class Module extends AbstractModule {
         return digitalInput::isHigh;
     }
 
-
-    @Override
-    protected void configure() {
-
-    }
 
 }

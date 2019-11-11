@@ -27,4 +27,12 @@ public class Functions {
     public static double round(double val) {
         return (double)Math.round(val * 100.0D) / 100.0D;
     }
+
+    public static byte[] toBytes(int... ints) { // helper function
+        byte[] result = new byte[ints.length];
+        for (int i = 0; i < ints.length; i++) {
+            result[i] = (byte) ints[i];
+        }
+        return result;
+    }
 }
