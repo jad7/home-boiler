@@ -21,8 +21,8 @@ public class RelaysService {
 
     @Inject
     public RelaysService(
-            com.pi4j.component.relay.Relay boiler,
-            com.pi4j.component.relay.Relay pump,
+            @Named("boilerRelay") com.pi4j.component.relay.Relay boiler,
+            @Named("pumpRelay") com.pi4j.component.relay.Relay pump,
             @Named("gasStat") Provider<Boolean> gasStat,
             Configuration configuration) {
         this.configuration = configuration;

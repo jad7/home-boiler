@@ -20,4 +20,7 @@ public class Toggle<T> {
     }
 
 
+    public boolean hasNext() {
+        return !list.isEmpty();
+    }
 }

@@ -5,6 +5,7 @@ import com.jad.r4j.boiler.impl.TaskProcessor;
 import com.jad.r4j.boiler.impl.sensor.AbstractTemprSensor;
 import com.jad.r4j.boiler.utils.Range;
 import com.jad.r4j.boiler.utils.RingBufferTimeserial;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -25,6 +26,7 @@ public class TemperatureService {
     public TemperatureService(final @Named("roomTemp") AbstractTemprSensor roomSensor,
                               final @Named("waterTemp") AbstractTemprSensor waterSensor,
                               @Named("config.temperature") Configuration configuration,
+                              DisplayService displayService,
                               TaskProcessor taskProcessor) {
 
         int refreshIntervalMs = configuration.getInt("refresh.ms");
@@ -44,6 +46,14 @@ public class TemperatureService {
             configuration.update(CURRENT_WATER_TEMP_KEY, Double.class,
                     round(waterTS.avg(10, TimeUnit.SECONDS)));
         }, 10, TimeUnit.SECONDS);
+
+        displayService.addStatic(() -> {
+            String str = configuration.getStr(CURRENT_ROOM_TEMP_KEY);
+            if (StringUtils.isBlank(str)) {
+                return "Un--\u2103C";
+            }
+            return str + "\u2103C";
+        });
     }
 
     public Range<Double> getExpectedNowRange() {
@@ -56,6 +66,8 @@ public class TemperatureService {
     }
 
     public boolean isRadiatorTempHigh() {
+
+        //TODO
         return false;
     }
 

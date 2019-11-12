@@ -100,6 +100,13 @@ public class RingBufferTimeserial {
       return avg;
    }
 
+   public Double getLast() {
+      if (position == 0) {
+         return null;
+      }
+      return array[position - 1].value;
+   }
+
 
 
 

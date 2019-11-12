@@ -1,3 +1,4 @@
+test.key: 5
 dynamic:
   currentMod: AUTO
 components:
@@ -53,7 +54,7 @@ config:
     min: 20
     max: 21
   display:
-    script.path: /home/pi/raspberrypi-python-tm1637/boiler.py
+    script.path: boiler_test.py
   periods:
     atHome:
       working: -01:00;08:00-12:00;20:00-;
@@ -62,7 +63,7 @@ config:
 debug: false
 local.storage.file: configs.db
 server:
-  url: http://boiler-server.herokuapp.com
+  url: http://test.boiler-server.herokuapp.com
   login: pi
   pass: unknown
   #url: http://192.168.0.103:8080

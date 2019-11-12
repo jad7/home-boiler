@@ -50,13 +50,13 @@ public class RemoteCommunicationService {
 
    public void update() {
       JSONObject jsonObject = new JSONObject();
-      jsonObject.put("manual", this.ch.isManual());
+      /*jsonObject.put("manual", this.ch.isManual());
       jsonObject.put("state", (Object)(this.ch.isAnyBodyAtHome() ? "AT_HOME" : "NOT_AT_HOME"));
       jsonObject.put("tempTo", this.ch.isAnyBodyAtHome() ? this.ch.maxWhenAtHomeTemperature() : this.ch.maxWhenNotAtHomeTemperature());
       jsonObject.put("tempFrom", this.ch.isAnyBodyAtHome() ? this.ch.minWhenAtHomeTemperature() : this.ch.minWhenNotAtHomeTemperature());
       jsonObject.put("currentTemperature", this.sensorsProvider.getCurrentRoomTemperature());
       jsonObject.put("relayEnabled", !this.sensorsProvider.isBoilerOff());
-
+*/
       try {
          byte[] bytes = (configuration.getStr("server.login") + ":" + configuration.getStr("server.pass")).getBytes();
          HttpResponse<JsonNode> response = Unirest.post(this.host + this.path).header("Content-Type", "application/json")
@@ -71,7 +71,7 @@ public class RemoteCommunicationService {
             JSONObject obj = (JSONObject)array.get(i);
             String name = obj.getString("name");
             byte var8 = -1;
-            switch(name.hashCode()) {
+            switch(name) {
             case "state":
                   var8 = 0;
             default:
@@ -96,17 +96,17 @@ public class RemoteCommunicationService {
             this.taskProcessor.schedule(this::update, 0L, TimeUnit.MILLISECONDS);
          }
 
-         this.error = false;
+         //this.error = false;
       } catch (Exception var10) {
          log.error((String)"Can not upload data to remote server", (Throwable)var10);
-         this.error = true;
+         //this.error = true;
          this.processException();
       }
 
    }
 
    private void setAtHomeManual(boolean val) {
-      UUID uuid = UUID.randomUUID();
+     /* UUID uuid = UUID.randomUUID();
       this.ch.setAnyBodyAtHomeManual(val, uuid);
       this.taskProcessor.schedule(() -> {
          DynamicConfigurationHolder.Manual<Boolean> manual = this.ch.getAnyBodyAtHomeManual();
@@ -115,7 +115,7 @@ public class RemoteCommunicationService {
          }
 
       }, (long)this.ch.getManualDurationMinutes(), TimeUnit.MINUTES);
-      this.displayController.showChanged();
+      this.displayController.showChanged();*/
    }
 
    public static void main(String[] args) {
@@ -136,9 +136,9 @@ public class RemoteCommunicationService {
       Runnable schedule = () -> {
          this.displayController.showError(DisplayError.HTTP_REMOTE_UPLOAD);
          --count.i;
-         if (count.i >= 0 && this.error) {
+         /*if (count.i >= 0 && this.error) {
             this.taskProcessor.schedule((Runnable)scheduleContainer.get(), 20L, TimeUnit.SECONDS);
-         }
+         }*/
 
       };
       scheduleContainer.set(schedule);

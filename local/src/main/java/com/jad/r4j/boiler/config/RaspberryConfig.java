@@ -225,7 +225,7 @@ public class RaspberryConfig extends AbstractModule {
       private List<Runnable> destroyList;
 
       private Hook() {
-         this.destroyList = new ArrayList();
+         this.destroyList = new ArrayList<>();
       }
 
       public void run() {

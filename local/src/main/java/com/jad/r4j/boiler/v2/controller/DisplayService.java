@@ -4,6 +4,7 @@ import com.jad.r4j.boiler.config.Configuration;
 import com.jad.r4j.boiler.config.ConfigurationParent;
 import com.jad.r4j.boiler.utils.Toggle;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -85,7 +86,11 @@ public class DisplayService {
                     if (poll != null) {
                         send(poll);
                     } else {
-                        send(staticInfo.next().get());
+                        if (staticInfo.hasNext()) {
+                            send(staticInfo.next().get());
+                        } else {
+                            Thread.sleep(3000);
+                        }
                     }
                 } catch (InterruptedException e) {
                     return;

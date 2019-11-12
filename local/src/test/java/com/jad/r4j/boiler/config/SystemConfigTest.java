@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
 
 public class SystemConfigTest {
 
-    private static final String EXAMPLE_KEY = "components.relay.boiler.offstate.pin";
+    private static final String EXAMPLE_KEY = "test.key";
     private static final String TEST_DB_FILE = "test.db";
     private Injector configInjector;
     private LocalStorageConfig localStorageConfig;
@@ -37,8 +37,8 @@ public class SystemConfigTest {
         int origin = config.getInt(EXAMPLE_KEY);
         int newVal = origin + 1;
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
-        config.registerListener("components.relay.boiler", stringTuple -> {
-            if (stringTuple.getA().equals("components.relay.boiler.offstate.pin")
+        config.registerListener("test", stringTuple -> {
+            if (stringTuple.getA().equals("test.key")
                     && String.valueOf(stringTuple.getB()).equals(String.valueOf(newVal))) {
                 atomicBoolean.set(true);
             }

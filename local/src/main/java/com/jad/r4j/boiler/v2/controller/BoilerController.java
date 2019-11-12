@@ -23,6 +23,7 @@ public class BoilerController {
         this.relaysService = relaysService;
         this.temperatureService = temperatureService;
         this.configuration = configuration;
+        mode = Mode.valueOf(configuration.getStr(Configuration.CURRENT_MODE_KEY));
         taskProcessor.scheduleRepeatable(this::onControl, 10, TimeUnit.SECONDS);
     }
 
@@ -46,6 +47,9 @@ public class BoilerController {
     }
 
     private Stat getState() {
+        if (stat == null) {
+            detectStatus();
+        }
         return stat;
     }
 
@@ -109,7 +113,7 @@ public class BoilerController {
                 if (!controller.isHeaterOn() && temperatureService.isRadiatorTempHigh()) {
                     controller.changeState(COOLING_DOWN);
                 } else {
-                    if (temperatureService.getExpectedNowRange().max() <= temperatureService.getAvgRoomTemperature(3, TimeUnit.MINUTES)) {
+                    if (temperatureService.getExpectedNowRange().max() <= temperatureService.getAvgRoomTemperature(1, TimeUnit.MINUTES)) {
                         controller.changeState(COOLING_DOWN);
                     }
                 }

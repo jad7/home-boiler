@@ -1,9 +1,6 @@
 package com.jad.r4j.boiler.v2.controller;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import com.google.inject.Scope;
-import com.google.inject.Scopes;
+import com.google.inject.*;
 import com.jad.r4j.boiler.config.Configuration;
 import com.jad.r4j.boiler.impl.MCP3208Controller;
 import com.jad.r4j.boiler.impl.sensor.AbstractTemprSensor;
@@ -19,14 +16,20 @@ import com.pi4j.io.spi.SpiMode;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Named;
-import javax.inject.Provider;
+//import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.util.function.Consumer;
 
 @Slf4j
-public class Module extends AbstractModule {
+public class ModuleV2 extends AbstractModule {
+
+    @Singleton
+    @Provides
+    public GpioController gpioController() {
+        return GpioFactory.getInstance();
+    }
 
     @Named("boilerRelay") @Singleton @Provides
     public Relay boilerRelay(@Named("components.relay.boiler.main.pin") int pinNum, GpioController gpioController) {
@@ -43,7 +46,9 @@ public class Module extends AbstractModule {
     }
 
     @Singleton @Provides
-    public MCP3208Controller mcp3208(@Named("components.mcp3208.spi") int spi, @Named("components.mcp3208.spi.speed") int spiSpeed, @Named("components.mcp3208.voltage") double voltage) throws IOException {
+    public MCP3208Controller mcp3208(@Named("components.mcp3208.spi") int spi,
+                                     @Named("components.mcp3208.spi.speed") int spiSpeed,
+                                     @Named("components.mcp3208.voltage") double voltage) throws IOException {
         SpiChannel spiCh = SpiChannel.getByNumber(spi);
         MCP3208Controller mcp3208Controller = new MCP3208Controller(spiCh, spiSpeed, SpiMode.MODE_0, voltage);
         log.info("MCP3208 configured on SPI: {}", spiCh);
@@ -89,13 +94,22 @@ public class Module extends AbstractModule {
         return new TM1637Python(new File(path));
     }
 
+    @Singleton
     @Provides
-    @Named("gasStat")
-    public Provider<Boolean> gasStat(@Named("components.ac.stat.pin") int pinNum, GpioController gpioController) {
+    @Named("gasStatInput")
+    public GpioPinDigitalInput gasStatInput(@Named("components.ac.stat.pin") int pinNum, GpioController gpioController) {
         Pin pin = RaspiPin.getPinByAddress(pinNum);
-        GpioPinDigitalInput digitalInput = gpioController.provisionDigitalInputPin(pin);
-        return digitalInput::isHigh;
+        return gpioController.provisionDigitalInputPin(pin);
     }
 
+    @Provides
+    @Named("gasStat")
+    public Boolean gasStat(@Named("gasStatInput") GpioPinDigitalInput input) {
+        return input.isHigh();
+    }
 
+    @Override
+    protected void configure() {
+        bind(BoilerController.class).asEagerSingleton();
+    }
 }

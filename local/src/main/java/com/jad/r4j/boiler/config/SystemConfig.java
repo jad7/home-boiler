@@ -51,18 +51,28 @@ public class SystemConfig extends AbstractModule {
 
             final ConfigurationParent parentConfig = new ConfigurationParent(merged);
             bind(Configuration.class).toInstance(parentConfig);
+            bind(Key.get(Configuration.class, new NamedImpl("globalConfig"))).toInstance(parentConfig);
             Binder binder = binder().skipSources(Names.class);
             Set<String> paths = new HashSet<>();
+            Set<String> registeredKeys = new HashSet<>();
             for (Map.Entry<String, String> entry : merged.entrySet()) {
                String key = entry.getKey();
+               registeredKeys.add(key);
                paths.addAll(extractPaths(key));
                binder.bind(Key.get(String.class, new NamedImpl(key)))
-                       .toProvider(() -> parentConfig.getStr(key))
-               ;
+                       .toProvider(() -> parentConfig.getStr(key));
+               binder.bind(Key.get(Integer.class, new NamedImpl(key)))
+                       .toProvider(() -> parentConfig.getInt(key));
+               binder.bind(Key.get(Double.class, new NamedImpl(key)))
+                       .toProvider(() -> parentConfig.getDouble(key));
+               binder.bind(Key.get(Boolean.class, new NamedImpl(key)))
+                       .toProvider(() -> parentConfig.getBool(key));
+
             }
+            paths.removeAll(registeredKeys);
             for (String path : paths) {
-               binder.bind(Key.get(String.class, new NamedImpl(path)))
-                       .toProvider((Provider)() -> parentConfig.getConfigByPrefix(path))
+               binder.bind(Key.get(Configuration.class, new NamedImpl(path)))
+                       .toProvider(() -> parentConfig.getConfigByPrefix(path))
                        .in(Scopes.SINGLETON);
             }
 
@@ -101,8 +111,13 @@ public class SystemConfig extends AbstractModule {
          return Collections.emptyList();
       }
       List<String> objects = new ArrayList<>(split.length - 1);
+      StringBuilder sb = new StringBuilder();
       for (int i = 0; i < split.length - 1; i++) {
-         objects.add(split[i]);
+         if (sb.length() != 0) {
+            sb.append('.');
+         }
+         sb.append(split[i]);
+         objects.add(sb.toString());
       }
       return objects;
    }

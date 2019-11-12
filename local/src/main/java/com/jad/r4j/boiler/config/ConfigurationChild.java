@@ -9,7 +9,7 @@ public class ConfigurationChild implements Configuration {
     private ConfigurationParent parent;
 
     public ConfigurationChild(String prefix, ConfigurationParent parent) {
-        this.prefix = prefix;
+        this.prefix = prefix.endsWith(".") ? prefix : prefix + ".";
         this.parent = parent;
     }
 
