@@ -111,5 +111,6 @@ public class ModuleV2 extends AbstractModule {
     @Override
     protected void configure() {
         bind(BoilerController.class).asEagerSingleton();
+        bind(CO2Service.class).asEagerSingleton();
     }
 }

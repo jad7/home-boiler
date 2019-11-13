@@ -15,18 +15,18 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Singleton
-public class COService {
+public class CO2Service {
     private final RingBufferTimeserial timeserial;
     private final Configuration configuration;
     private final DisplayService displayService;
     private MHZ19 mhz19;
 
     @Inject
-    public COService(DisplayService displayService,
-                     TaskProcessor taskProcessor,
-                     @Named("config.co2.refresh.ms") Integer refreshMs,
-                     Configuration configuration,
-                     MHZ19 mhz19) {
+    public CO2Service(DisplayService displayService,
+                      TaskProcessor taskProcessor,
+                      @Named("config.co2.refresh.ms") Integer refreshMs,
+                      Configuration configuration,
+                      MHZ19 mhz19) {
         this.displayService = displayService;
         this.configuration = configuration;
         this.mhz19 = mhz19;

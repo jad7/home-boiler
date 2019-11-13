@@ -3,6 +3,7 @@ package com.jad.r4j.boiler.integration;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.jad.r4j.boiler.impl.MCP3208Controller;
+import com.jad.r4j.boiler.impl.sensor.MHZ19;
 import com.pi4j.component.relay.Relay;
 import com.pi4j.component.relay.impl.GpioRelayComponent;
 import com.pi4j.gpio.extension.mcp.MCP3208Pin;
@@ -28,9 +29,6 @@ public class TestModule extends AbstractModule {
 
     @Named("pumpRelay") @Singleton @Provides
     public Relay pumpRelay() {
-       // Pin pin = RaspiPin.getPinByAddress(pinNum);
-        //GpioPinDigitalOutput digitalOutput = gpioController.provisionDigitalOutputPin(pin);
-        //return new GpioRelayComponent(digitalOutput);
         return Mockito.mock(Relay.class);
     }
 
@@ -41,6 +39,17 @@ public class TestModule extends AbstractModule {
         MCP3208Controller mcp3208Controller = Mockito.mock(MCP3208Controller.class);
         BDDMockito.when(mcp3208Controller.pinReaderSignal(Mockito.any())).then((inv) -> Math.random() * 256);
         return mcp3208Controller;
+    }
+
+    @Override
+    protected void configure() {
+        MHZ19 mock = Mockito.mock(MHZ19.class);
+        try {
+            BDDMockito.when(mock.read()).then((inv) -> (int)(Math.random() * 2000));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        bind(MHZ19.class).toInstance(mock);
     }
 
     @Singleton

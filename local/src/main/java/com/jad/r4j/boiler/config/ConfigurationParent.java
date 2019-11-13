@@ -82,6 +82,11 @@ public class ConfigurationParent implements Configuration {
    }
 
    @Override
+   public NavigableMap<String, String> getAll() {
+      return Collections.unmodifiableNavigableMap(merged);
+   }
+
+   @Override
    public boolean getBool(String s) {
       return Boolean.parseBoolean(this.merged.get(s));
    }

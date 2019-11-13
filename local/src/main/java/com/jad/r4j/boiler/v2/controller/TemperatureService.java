@@ -57,8 +57,9 @@ public class TemperatureService {
     }
 
     public Range<Double> getExpectedNowRange() {
+        return new Range<>(10d,25d);
         //TODO implement
-        return null;
+        //return null;
     }
 
     public Double getAvgRoomTemperature(int forLast, TimeUnit timeUnit) {

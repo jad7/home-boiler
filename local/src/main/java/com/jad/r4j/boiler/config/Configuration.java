@@ -2,6 +2,7 @@ package com.jad.r4j.boiler.config;
 
 import com.jad.r4j.boiler.utils.Tuple;
 
+import java.util.NavigableMap;
 import java.util.function.Consumer;
 
 public interface Configuration {
@@ -20,6 +21,8 @@ public interface Configuration {
     void registerListener(String prefix, Consumer<Tuple<String, ?>> consumer);
 
     Configuration getConfigByPrefix(String prefix);
+
+    NavigableMap<String, String> getAll();
 
     boolean getBool(String s);
 

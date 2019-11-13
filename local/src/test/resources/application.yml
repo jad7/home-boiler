@@ -63,7 +63,7 @@ config:
 debug: false
 local.storage.file: configs.db
 server:
-  url: http://test.boiler-server.herokuapp.com
+  url: http://localhost:8080
   login: pi
   pass: unknown
   #url: http://192.168.0.103:8080

@@ -11,6 +11,7 @@ import com.pi4j.io.serial.SerialConfig;
 import com.pi4j.io.serial.SerialFactory;
 import com.pi4j.io.serial.StopBits;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +24,7 @@ public class MHZ19 implements AutoCloseable {
     //public static final byte[] DATA = new byte[]{-1, 1, -122, 0, 0, 0, 0, 0, 121};
     final Serial serial = SerialFactory.createInstance();
 
+    @Inject
     public MHZ19(Lifecycle lifecycle) {
         SerialConfig serialConfig = new SerialConfig();
         serialConfig.baud(Baud._9600);

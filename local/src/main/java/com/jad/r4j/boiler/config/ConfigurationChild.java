@@ -2,6 +2,7 @@ package com.jad.r4j.boiler.config;
 
 import com.jad.r4j.boiler.utils.Tuple;
 
+import java.util.NavigableMap;
 import java.util.function.Consumer;
 
 public class ConfigurationChild implements Configuration {
@@ -26,6 +27,11 @@ public class ConfigurationChild implements Configuration {
     @Override
     public Configuration getConfigByPrefix(String prefix) {
         return parent.getConfigByPrefix(this.prefix + prefix);
+    }
+
+    @Override
+    public NavigableMap<String, String> getAll() {
+        return parent.getAll().subMap(prefix, true,prefix + Character.MAX_VALUE, true);
     }
 
     @Override
