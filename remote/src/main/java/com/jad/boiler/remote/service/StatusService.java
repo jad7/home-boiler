@@ -1,8 +1,8 @@
 package com.jad.boiler.remote.service;
 
-import com.jad.boiler.remote.dto.Action;
-import com.jad.boiler.remote.dto.Info;
-import com.jad.boiler.remote.dto.Status;
+import com.jad.boiler.remote.dto.v1.Action;
+import com.jad.boiler.remote.dto.v1.Info;
+import com.jad.boiler.remote.dto.v1.Status;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -21,8 +21,8 @@ public class StatusService {
    private Integer heartbeatIntervaleSeconds;
    @Value("${com.jad.boiler.remote.pi.heartbeat.interval.max.error.seconds}")
    private Integer heartbeatIntervalMaxErrorSeconds;
-   private BlockingQueue<Action> actions = new ArrayBlockingQueue(20);
-   private AtomicReference<Status> status = new AtomicReference();
+   private BlockingQueue<Action> actions = new ArrayBlockingQueue<>(20);
+   private AtomicReference<Status> status = new AtomicReference<>();
    private volatile LocalDateTime lastUpdate;
 
    public StatusService() {
@@ -59,7 +59,7 @@ public class StatusService {
    public Collection<Action> setState(Status status) {
       this.lastUpdate = LocalDateTime.now();
       this.status.set(status);
-      ArrayList<Action> actions = new ArrayList();
+      List<Action> actions = new ArrayList<>();
       this.actions.drainTo(actions);
       return actions;
    }

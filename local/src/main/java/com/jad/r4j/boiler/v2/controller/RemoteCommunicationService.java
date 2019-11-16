@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Named;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -32,17 +33,20 @@ public class RemoteCommunicationService {
    private String path;
    private DisplayController displayController;
    private TaskProcessor taskProcessor;
+   private Configuration dynamicConfig;
    private Configuration configuration;
 
    @Inject
    public RemoteCommunicationService(@Named("server.url") String host, @Named("server.path") String path,
                                      DisplayController displayController,
                                      TaskProcessor taskProcessor,
+                                     @Named("dynamic") Configuration dynamicConfig,
                                      @Named("globalConfig") Configuration configuration) {
       this.host = host;
       this.path = path;
       this.displayController = displayController;
       this.taskProcessor = taskProcessor;
+      this.dynamicConfig = dynamicConfig;
       this.configuration = configuration;
    }
 
@@ -50,13 +54,10 @@ public class RemoteCommunicationService {
 
    public void update() {
       JSONObject jsonObject = new JSONObject();
-      /*jsonObject.put("manual", this.ch.isManual());
-      jsonObject.put("state", (Object)(this.ch.isAnyBodyAtHome() ? "AT_HOME" : "NOT_AT_HOME"));
-      jsonObject.put("tempTo", this.ch.isAnyBodyAtHome() ? this.ch.maxWhenAtHomeTemperature() : this.ch.maxWhenNotAtHomeTemperature());
-      jsonObject.put("tempFrom", this.ch.isAnyBodyAtHome() ? this.ch.minWhenAtHomeTemperature() : this.ch.minWhenNotAtHomeTemperature());
-      jsonObject.put("currentTemperature", this.sensorsProvider.getCurrentRoomTemperature());
-      jsonObject.put("relayEnabled", !this.sensorsProvider.isBoilerOff());
-*/
+      for (Map.Entry<String, String> props : dynamicConfig.getAll().entrySet()) {
+         jsonObject.put(props.getKey(), props.getValue());
+      }
+
       try {
          byte[] bytes = (configuration.getStr("server.login") + ":" + configuration.getStr("server.pass")).getBytes();
          HttpResponse<JsonNode> response = Unirest.post(this.host + this.path).header("Content-Type", "application/json")
@@ -85,7 +86,7 @@ public class RemoteCommunicationService {
                   }
                   break;
                default:
-                  log.warn((String)"Not supported update action: {}", (Object)name);
+                  log.warn("Not supported update action: {}", (Object)name);
                }
 
                ++i;

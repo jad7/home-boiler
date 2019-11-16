@@ -7,6 +7,8 @@ import com.jad.r4j.boiler.impl.TaskProcessor;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Singleton
 public class BoilerController {
@@ -14,20 +16,28 @@ public class BoilerController {
     private final RelaysService relaysService;
     private final TemperatureService temperatureService;
     private final Configuration configuration;
+    private final DisplayService displayService;
 
     @Inject
     public BoilerController(RelaysService relaysService,
                             TemperatureService temperatureService,
                             TaskProcessor taskProcessor,
-                            Configuration configuration) {
+                            Configuration configuration,
+                            DisplayService displayService) {
         this.relaysService = relaysService;
         this.temperatureService = temperatureService;
         this.configuration = configuration;
         mode = Mode.valueOf(configuration.getStr(Configuration.CURRENT_MODE_KEY));
+        this.displayService = displayService;
+        configuration.update(Configuration.CURRENT_MODE_VALUES, String.class,
+                Stream.of(Mode.values()).map(Mode::name).collect(Collectors.joining(",")));
+        configuration.registerListener(Configuration.CURRENT_MODE_KEY,
+                tuple -> changeMode(Mode.valueOf(String.valueOf(tuple.getB()))));
         taskProcessor.scheduleRepeatable(this::onControl, 10, TimeUnit.SECONDS);
     }
 
     private Mode mode;
+
     private Stat stat;
 
     private void onControl() {
@@ -39,6 +49,8 @@ public class BoilerController {
             this.mode = mode;
             configuration.update(Configuration.CURRENT_MODE_KEY, String.class, mode.name());
             this.mode.onSet(this);
+            //displayService.showNotification("");// TODO
+
         }
     }
 
@@ -85,7 +97,20 @@ public class BoilerController {
                 controller.relays().boiler().auto();
                 controller.relays().pump().auto();
             }
-        };
+        },
+        DISABLED {
+            @Override
+            void onStatus(BoilerController controller) {
+
+            }
+
+            @Override
+            void onSet(BoilerController controller) {
+                controller.relays().boiler().off();
+                controller.relays().pump().auto();
+            }
+        }
+        ;
 
         abstract void onStatus(BoilerController controller);
         abstract void onSet(BoilerController controller);
@@ -110,7 +135,7 @@ public class BoilerController {
             @Override
             void onStatus(BoilerController controller) {
                 TemperatureService temperatureService = controller.temperatureService;
-                if (!controller.isHeaterOn() && temperatureService.isRadiatorTempHigh()) {
+                if (!controller.isHeaterOn()) {
                     controller.changeState(COOLING_DOWN);
                 } else {
                     if (temperatureService.getExpectedNowRange().max() <= temperatureService.getAvgRoomTemperature(1, TimeUnit.MINUTES)) {

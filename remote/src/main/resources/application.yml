@@ -1,7 +1,19 @@
 server.port: ${PORT:8080}
 com.jad.boiler.remote:
+  priority.version: 2
+  security:
+    admin:
+      loginpass: ${ADM_LOGIN:root:root}
   pi.heartbeat.interval:
     second: 60
     max.error.seconds: 60
+
+
+
+spring:
+  datasource:
+    url: ${CLEARDB_DATABASE_URL:jdbc:mysql://root:root@127.0.0.1:3306/test}
+
+
 
 #logging.level.org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG

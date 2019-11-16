@@ -1,4 +1,4 @@
-package com.jad.boiler.remote.dto;
+package com.jad.boiler.remote.dto.v1;
 
 import lombok.Data;
 

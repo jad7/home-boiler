@@ -1,26 +1,25 @@
 package com.jad.boiler.remote.controller;
 
-import com.jad.boiler.remote.dto.Action;
-import com.jad.boiler.remote.dto.Info;
-import com.jad.boiler.remote.dto.Status;
+import com.jad.boiler.remote.dto.v1.Action;
+import com.jad.boiler.remote.dto.v1.Info;
+import com.jad.boiler.remote.dto.v1.Status;
+import com.jad.boiler.remote.service.HistoryService;
 import com.jad.boiler.remote.service.StatusService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.Collection;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping({"/boiler/v1/"})
+@RequestMapping({"/boiler/v2/"})
 @RestController
-public class BoilerControll {
+public class BoilerControlV2 {
    @Autowired
    private StatusService statusService;
+   @Autowired
+   private HistoryService historyService;
 
-   public BoilerControll() {
-   }
+
 
    @GetMapping({"info"})
    public Info getInfo() {
@@ -35,5 +34,10 @@ public class BoilerControll {
    @PostMapping({"setStatus"})
    public Collection<Action> setStatus(@RequestBody Status currentStatus) {
       return this.statusService.setState(currentStatus);
+   }
+
+   @GetMapping("resetError")
+   public void resetHistoryError() {
+      historyService.resetError();
    }
 }

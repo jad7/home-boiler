@@ -10,6 +10,7 @@ public interface Configuration {
     String CURRENT_WATER_TEMP_KEY = "dynamic.currentWaterTmp";
     String CURRENT_STATE_KEY = "dynamic.currentStat";
     String CURRENT_MODE_KEY = "dynamic.currentMod";
+    String CURRENT_MODE_VALUES = "values.dynamic.currentMod";
     String BOILER_RELAY_STAT = "dynamic.boilerStat";
     String PUMP_RELAY_STAT = "dynamic.pumpStat";
     String CURRENT_CO2_STAT = "dynamic.currentCO2";
