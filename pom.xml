@@ -6,16 +6,25 @@
 
     <groupId>com.kh.jad</groupId>
     <artifactId>boiler</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
 
     <modules>
+        <module>api-utils</module>
         <module>local</module>
         <module>remote</module>
+        <module>co2</module>
     </modules>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
 
     <dependencies>
 
-        <dependency>
+       <!-- <dependency>
             <groupId>com.jad</groupId>
             <artifactId>backend</artifactId>
             <scope>system</scope>
@@ -30,6 +39,27 @@
             <scope>system</scope>
             <systemPath>/Users/ikrokhmalyov/IdeaProjects/boiler/libs/boiler-remote-0.0.1-SNAPSHOT.jar</systemPath>
         </dependency>
+
+        <dependency>
+            <groupId>com.jad</groupId>
+            <artifactId>girls</artifactId>
+            <version>0.0.1</version>
+            <scope>system</scope>
+            <systemPath>/Users/ikrokhmalyov/IdeaProjects/boiler/libs/classes.jar</systemPath>
+        </dependency>-->
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

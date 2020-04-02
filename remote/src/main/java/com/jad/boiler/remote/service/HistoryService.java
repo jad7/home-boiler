@@ -1,6 +1,7 @@
 package com.jad.boiler.remote.service;
 
 
+import com.google.common.collect.Lists;
 import com.jad.boiler.remote.dao.StateHistoryDao;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,16 +13,20 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Slf4j
 @Component
 public class HistoryService {
+
+    public static String[] TYPES = {"ROOM_TEMP", "CO2"};
 
     @Autowired
     private StateHistoryDao stateHistoryDao;
@@ -66,6 +71,28 @@ public class HistoryService {
 
     public void resetError() {
         savingError.set(false);
+    }
+
+    public List<StateHistoryDao.Point> getCurrent(String type, int resPoints) {
+        List<StateHistoryDao.Point> data = stateHistoryDao.loadLastNHours(24, type);
+        List<StateHistoryDao.Point> subData = data.subList(0, data.size() - 1);
+        int size = subData.size();
+        int perPoint = size / resPoints;
+        List<StateHistoryDao.Point> result = Lists.partition(subData, perPoint).stream()
+                .map(list -> {
+                    OptionalDouble average = list.stream().mapToDouble(StateHistoryDao.Point::getValue).average();
+                    Timestamp time = list.get(list.size() / 2).getTime();
+                    return new StateHistoryDao.Point(type, (float) average.getAsDouble(), time);
+                })
+                .collect(Collectors.toList());
+        result.add(data.get(data.size() - 1));
+        return result;
+    }
+
+    public static void main(String[] args) {
+        List<Integer> data = IntStream.range(0, 13).boxed().collect(Collectors.toList());
+        data.add(14);
+        System.out.println(Lists.partition(data.subList(0, data.size() - 1), 5));
     }
 
     @AllArgsConstructor @Data

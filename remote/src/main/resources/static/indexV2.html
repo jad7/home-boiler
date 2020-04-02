@@ -24,6 +24,7 @@
             min-width: 100%;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script>
         window.mobilecheck = function() {
@@ -36,32 +37,42 @@
             $(".table").css('width', '100%')
         }
         var currentData;
-         function getData() {
-            $.getJSON('/boiler/v1/info', {
-                tagmode: "any",
-                format: "json"
-            })
-            .done(function (data) {
-                currentData = data;
-                var alive = $('#alive');
-                alive.text(data.alive);
-                alive.css('background-color', data.alive );
+        var chart;
 
-                if (data.inited) {
-                    var status = data.status;
-                    $('#boilerState').text(status.state);
-                    $('#lastUpdate').text(data.lastUpdate)
-                    $('#currentTemp').text(status.currentTemperature);
-                    $('#maxTemp').text(status.tempTo);
-                    $('#minTemp').text(status.tempFrom);
-                    $('#relay').text(status.relayStatus ? 'ENABLED' : 'DISABLED');
-                    $('#isManual').text(status.manual ? 'SET MANUAL' : 'AUTOMATIC');
-                    $('#loading').text('');
-                    $('#change').css('display', "block");
-                } else {
-                    $('#loading').text('Still not received any data from boiler');
-                }
-            });
+    function drawGraph(data) {
+
+    }
+
+     function getData() {
+         var ctx = document.getElementById('tempGraphic').getContext('2d');
+        chart = new Chart(ctx, {
+             type: 'line'
+         });
+        $.getJSON('/boiler/v2/info', {
+            tagmode: "any",
+            format: "json"
+        })
+        .done(function (data) {
+            currentData = data;
+            var alive = $('#alive');
+            alive.text(data.alive);
+            alive.css('background-color', data.alive );
+
+            if (data.inited) {
+                var status = data.status;
+                $('#boilerState').text(status.state);
+                $('#lastUpdate').text(data.lastUpdate)
+                $('#currentTemp').text(status.currentTemperature);
+                $('#maxTemp').text(status.tempTo);
+                $('#minTemp').text(status.tempFrom);
+                $('#relay').text(status.relayStatus ? 'ENABLED' : 'DISABLED');
+                $('#isManual').text(status.manual ? 'SET MANUAL' : 'AUTOMATIC');
+                $('#loading').text('');
+                $('#change').css('display', "block");
+            } else {
+                $('#loading').text('Still not received any data from boiler');
+            }
+        });
         }
 
         function update() {
@@ -89,6 +100,7 @@
     </script>
 </head>
 <body onload="getData()">
+<canvas id="tempGraphic"></canvas>
 <div id="loading">LOADING!</div>
 <p/>
 Current server status: <div style="font-size: large; color: black" id="alive">UNKNOWN</div>

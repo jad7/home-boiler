@@ -5,11 +5,16 @@ import com.jad.boiler.remote.dto.v1.Info;
 import com.jad.boiler.remote.dto.v1.Status;
 import com.jad.boiler.remote.service.HistoryService;
 import com.jad.boiler.remote.service.StatusService;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 @RequestMapping({"/boiler/v2/"})
 @RestController
@@ -36,8 +41,24 @@ public class BoilerControlV2 {
       return this.statusService.setState(currentStatus);
    }
 
+   @GetMapping
+   public Map<String, List<Point>> getCurrentStatus() {
+     // Stream.of(HistoryService.TYPES)
+     //         .map(type -> historyService)
+
+      //historyService.getCurrent()
+      return null;
+   }
+
    @GetMapping("resetError")
    public void resetHistoryError() {
       historyService.resetError();
+   }
+
+   @Data
+   @AllArgsConstructor
+   public static class Point {
+      private Timestamp x;
+      private Float y;
    }
 }

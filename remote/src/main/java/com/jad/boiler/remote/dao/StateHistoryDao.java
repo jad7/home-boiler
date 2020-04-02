@@ -1,6 +1,8 @@
 package com.jad.boiler.remote.dao;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -80,7 +82,13 @@ public class StateHistoryDao {
 
     }
 
+    public List<Point> loadLastNHours(int n, String type) {
+        return template.query("SELECT * FROM current WHERE name = ? AND created > now() - interval ? hour", Point::map, type, n);
+    }
+
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Point {
         private String type;
         private Float value;
