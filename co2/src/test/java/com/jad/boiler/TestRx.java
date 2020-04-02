@@ -18,7 +18,8 @@ public class TestRx {
 
     private static long start = System.currentTimeMillis();
 
-    @Test
+    //For manual testing
+    //@Test
     public void testRX() {
         log("Start");
         //Scheduler scheduler = new MyScheduler();

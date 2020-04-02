@@ -66,6 +66,7 @@ public class Main {
         if (influxDBDao != null) {
             influxDBDao.close();
         }
+        executor.shutdown();
     }
 
     private Observable<SensorValue> createTemperatureObservable() {

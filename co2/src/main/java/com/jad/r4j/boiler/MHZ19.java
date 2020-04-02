@@ -184,7 +184,7 @@ public class MHZ19 implements AutoCloseable {
                     do {
                         read = read();
                         log.debug("CO2: {}", read);
-                    } while (read <= 0 && retry-- > 0);
+                    } while ((read == null || read <= 0) && retry-- > 0);
                     return read;
                 })
                 .filter(Objects::nonNull)
