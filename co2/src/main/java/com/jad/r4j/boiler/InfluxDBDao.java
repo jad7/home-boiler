@@ -4,8 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Point;
+import org.influxdb.dto.Query;
 
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class InfluxDBDao {
@@ -23,10 +26,46 @@ public class InfluxDBDao {
 
     }
 
+    public void copy() {
+        class Val {int i = 0;};
+        final Val val = new Val();
+        influxDB.query(new Query("SELECT \"value\" FROM \"sensors_fix\""), 1000, qr -> {
+            qr.getResults().forEach(result -> {
+                result.getSeries().forEach(series -> {
+                    series.getValues().forEach(list -> {
+                        val.i++;
+                        Object o = list.get(1);
+                        if (o instanceof Double) {
+                            String tag;
+                            Double d = (Double) o;
+                            if (d < 25) {
+                                tag = "kitchenTemp";
+                            } else {
+                                tag = "co2";
+                            }
+                            influxDB.write(Point.measurement("sensors")
+                                    .time(Instant.parse(list.get(0).toString()).toEpochMilli(), TimeUnit.MILLISECONDS)
+                                    .tag("sensor", tag)
+                                    .addField("value", d)
+                                    .build());
+                        }
+                    });
+                });
+            });
+            System.out.println("Done: " + val.i);
+        });
+    }
+
+    public static void main(String[] args) {
+        InfluxDBDao influxDBDao = new InfluxDBDao();
+        influxDBDao.copy();
+        influxDBDao.close();
+    }
+
     public void consume(SensorValue sensorValue) {
         influxDB.write(Point.measurement("sensors")
                 .time(sensorValue.getTime(), TimeUnit.MILLISECONDS)
-                .tag("sensor ", sensorValue.getName())
+                .tag("sensor", sensorValue.getName())
                 .addField("value", sensorValue.getValue())
                 .build());
     }

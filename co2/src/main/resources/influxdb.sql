@@ -6,6 +6,6 @@ CREATE CONTINUOUS QUERY "cq_1d" on "boiler" RESAMPLE EVERY 1d FOR 1d BEGIN SELEC
 
 
 ##Enable
-gpio write 17 1
+gpio write 0 1
 ##Disable
-gpio write 17 0
+gpio write 0 0
