@@ -7,19 +7,49 @@ import io.reactivex.Observable;
 import io.reactivex.Scheduler;
 import io.reactivex.schedulers.Schedulers;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.*;
 
-import java.io.IOException;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+//import java.net.http.HttpClient;
+//import java.net.http.HttpRequest;
+//import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class Main {
+    public static final URL VIBER_BOT_STATUS;
+
+    static {
+        try {
+            VIBER_BOT_STATUS = URI.create("https://totoro-viber-bot.herokuapp.com/status").toURL();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private MHZ19 mhz19;
     private MCP3208TemperatureSensor temprSensor;
     private InfluxDBDao influxDBDao;
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
     private final Scheduler scheduler = Schedulers.from(executor);
+    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    private OkHttpClient okHttpClient;
+
+    /*private final HttpClient httpClient = HttpClient.newBuilder()
+            .executor(executor)
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();*/
+
 
     public static void main(String[] args) {
         Main main = new Main();
@@ -47,16 +77,81 @@ public class Main {
         log.info("Temperature sensor ready");
         influxDBDao = new InfluxDBDao();
         log.info("DB connection ready");
+        okHttpClient = new OkHttpClient.Builder()
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .connectionPool(new ConnectionPool(1, 6, TimeUnit.HOURS))
+                .readTimeout(10, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .cache(null)
+                .build();
+        log.info("REST client ready");
     }
 
     private void run() {
+        SensorValue stub = new SensorValue("STUB", Double.NaN);
+        final Map<String, SensorValue> state = new HashMap<>(2);
         Observable.fromArray(mhz19.getObservable(scheduler), createTemperatureObservable())
                 .flatMap(t -> t, false, 2, 1)
                 .doOnNext(influxDBDao::consume)
+                .doOnError(e -> log.info("Can not consume value", e))
+                .doOnNext(val -> state.put(val.getName(), val))
+                .throttleLatest(1, TimeUnit.MINUTES, scheduler)
+                .doOnNext(v -> send(state))
+                .onErrorReturn(e -> {
+                    log.error("Error", e);
+                    return stub;
+                })
                 .subscribeOn(scheduler)
                 .doOnTerminate(this::close)
                 .blockingSubscribe();
+    }
 
+    private void send(Map<String, SensorValue> state) throws IOException {
+        sendOkHttp(state);
+    }
+    private void sendOkHttp(Map<String, SensorValue> state) throws IOException {
+        Request request = new Request.Builder()
+                .url(VIBER_BOT_STATUS)
+                .addHeader("Content-Type", "application/json")
+                .post(RequestBody.create(JSON, toJson(state)))
+                .build();
+        okHttpClient.newCall(request).execute();
+    }
+
+    private void sendJavaUrl(Map<String, SensorValue> state) throws IOException {
+        HttpURLConnection con = (HttpURLConnection) VIBER_BOT_STATUS.openConnection();
+        con.setRequestMethod("POST");
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setConnectTimeout(10_000);
+        con.setDoOutput(true);
+        byte[] data = toJson(state).getBytes();
+        con.setRequestProperty("Content-Length", Integer.toString(data.length));
+        DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+        wr.write(data);
+        wr.close();
+
+        InputStream is = con.getInputStream();
+        BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+        StringBuilder response = new StringBuilder();
+        String line;
+        while ((line = rd.readLine()) != null) {
+            response.append(line);
+            response.append('\r');
+        }
+        rd.close();
+        con.disconnect();
+        /*HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(VIBER_BOT_STATUS)
+                .POST(HttpRequest.BodyPublishers.ofString())
+                .build();
+        httpClient.send(httpRequest, HttpResponse.BodyHandlers.discarding());*/
+    }
+
+    private static String toJson(Map<String, SensorValue> state) {
+        return state.entrySet().stream()
+                .map(e -> "\"" + e.getKey() + "\":" + e.getValue().asJson())
+                .collect(Collectors.joining(",", "{", "}"));
     }
 
     private void close() {

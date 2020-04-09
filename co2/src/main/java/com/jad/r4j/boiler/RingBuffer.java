@@ -75,7 +75,7 @@ public class RingBuffer<T> {
 
    public double mean() {
       if (this.size == 0) {
-         return 0.0D / 0.0;
+         return Double.NaN;
       } else if (this.size < 50) {
          double sum = 0.0D;
 

@@ -11,6 +11,11 @@
 
     <artifactId>co2</artifactId>
 
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
     <dependencies>
 
         <dependency>
@@ -59,6 +64,7 @@
             <artifactId>rxjava</artifactId>
             <version>2.2.19</version>
         </dependency>
+
 
         <dependency>
             <groupId>junit</groupId>

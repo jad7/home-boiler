@@ -24,7 +24,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 
-//sudo systemctl start serial-getty@ttyAMA0.service
+//sudo systemctl stop serial-getty@ttyAMA0.service
 @Slf4j
 public class MHZ19 implements AutoCloseable {
     public static final byte[] DATA = Functions.toBytes( 0xff, 1, 0x86, 0, 0, 0, 0, 0, 0x79);
@@ -180,15 +180,20 @@ public class MHZ19 implements AutoCloseable {
         return Observable.interval(0, 10, TimeUnit.SECONDS, scheduler)
                 .map(v -> {
                     int retry = 10;
-                    Integer read = null;
+                    Integer read = -1;
                     do {
                         read = read();
                         log.debug("CO2: {}", read);
                     } while ((read == null || read <= 0) && retry-- > 0);
                     return read;
                 })
-                .filter(Objects::nonNull)
-                .map(val -> new SensorValue("co2", val.doubleValue()));
+                .doOnError(e -> {
+                    log.error("Can not read CO2 value", e);
+                })
+                .onErrorReturnItem(-1)
+                .filter(i -> i != -1)
+                .map(val -> new SensorValue("co2", val.doubleValue()))
+                ;
 
     }
 }
