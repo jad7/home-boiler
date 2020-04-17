@@ -84,9 +84,11 @@
                             <mainClass>com.jad.r4j.boiler.Main</mainClass>
                         </manifest>
                     </archive>
+                    <finalName>co2</finalName>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
+                    <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>
                     <execution>

@@ -63,11 +63,15 @@ public class InfluxDBDao {
     }
 
     public void consume(SensorValue sensorValue) {
-        influxDB.write(Point.measurement("sensors")
-                .time(sensorValue.getTime(), TimeUnit.MILLISECONDS)
-                .tag("sensor", sensorValue.getName())
-                .addField("value", sensorValue.getValue())
-                .build());
+        try {
+            influxDB.write(Point.measurement("sensors")
+                    .time(sensorValue.getTime(), TimeUnit.MILLISECONDS)
+                    .tag("sensor", sensorValue.getName())
+                    .addField("value", sensorValue.getValue())
+                    .build());
+        } catch (Exception e) {
+            log.error("InfluxDB can not consume value", e);
+        }
     }
 
     public void close() {

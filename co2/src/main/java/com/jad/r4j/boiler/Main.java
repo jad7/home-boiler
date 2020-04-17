@@ -37,11 +37,12 @@ public class Main {
         }
     }
 
+    private final ArduinoSerial arduinoSerial = new ArduinoSerial();
     private MHZ19 mhz19;
     private MCP3208TemperatureSensor temprSensor;
     private InfluxDBDao influxDBDao;
-    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-    private final Scheduler scheduler = Schedulers.from(executor);
+    private ScheduledExecutorService executor;
+    private Scheduler scheduler;
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private OkHttpClient okHttpClient;
 
@@ -51,19 +52,25 @@ public class Main {
             .build();*/
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         Main main = new Main();
-        try {
-            main.init();
-        } catch (Exception e) {
-            log.error("Catch error on init", e);
-            main.close();
-            return;
-        }
+        boolean successInited = false;
+        do {
+            try {
+                main.init();
+                successInited = true;
+            } catch (Exception e) {
+                log.error("Catch error on init", e);
+                main.close();
+                TimeUnit.SECONDS.sleep(10);
+            }
+        } while (!Thread.currentThread().isInterrupted() && !successInited);
         main.run();
     }
 
     private void init() throws IOException {
+        executor = Executors.newScheduledThreadPool(1);
+        scheduler = Schedulers.from(executor);
         mhz19 = new MHZ19();
         log.info("CO2 sensor ready");
         SpiChannel spiCh = SpiChannel.getByNumber(0);
@@ -89,26 +96,29 @@ public class Main {
     }
 
     private void run() {
-        SensorValue stub = new SensorValue("STUB", Double.NaN);
         final Map<String, SensorValue> state = new HashMap<>(2);
-        Observable.fromArray(mhz19.getObservable(scheduler), createTemperatureObservable())
-                .flatMap(t -> t, false, 2, 1)
+        Observable.fromArray(mhz19.getObservable(scheduler),
+                    createTemperatureObservable(),
+                    arduinoSerial.getObservable(scheduler)
+                )
+                .retry(throwable -> !Thread.currentThread().isInterrupted())
+                .flatMap(t -> t, false, 3, 1)
                 .doOnNext(influxDBDao::consume)
-                .doOnError(e -> log.info("Can not consume value", e))
                 .doOnNext(val -> state.put(val.getName(), val))
                 .throttleLatest(1, TimeUnit.MINUTES, scheduler)
                 .doOnNext(v -> send(state))
-                .onErrorReturn(e -> {
-                    log.error("Error", e);
-                    return stub;
-                })
+                .retry(throwable -> !Thread.currentThread().isInterrupted())
                 .subscribeOn(scheduler)
                 .doOnTerminate(this::close)
                 .blockingSubscribe();
     }
 
     private void send(Map<String, SensorValue> state) throws IOException {
-        sendOkHttp(state);
+        try {
+            sendOkHttp(state);
+        } catch (Exception e) {
+            log.error("Http error", e);
+        }
     }
     private void sendOkHttp(Map<String, SensorValue> state) throws IOException {
         Request request = new Request.Builder()
@@ -160,6 +170,19 @@ public class Main {
         }
         if (influxDBDao != null) {
             influxDBDao.close();
+        }
+        if (okHttpClient != null) {
+            try {
+                okHttpClient.dispatcher().executorService().shutdown();
+                okHttpClient.connectionPool().evictAll();
+                if (okHttpClient.cache() != null) {
+                    okHttpClient.cache().close();
+                }
+            } catch (Exception e) {
+                //ignore
+            } finally {
+                okHttpClient = null;
+            }
         }
         executor.shutdown();
     }

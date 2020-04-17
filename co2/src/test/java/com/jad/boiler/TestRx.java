@@ -58,6 +58,23 @@ public class TestRx {
     }
 
     @Test
+    public void testException() {
+        Observable.range(0, 7)
+                .map(i -> {
+                    if (i == 5) {
+                        throw new RuntimeException("Hi");
+                    }
+                    return i;
+                })
+                .onErrorReturn(e-> {
+                    System.out.println("Catched error with:" + e.getMessage());
+                    return 5;
+                })
+                .retry()
+                .subscribe(System.out::println);
+    }
+
+    @Test
     public void testCombine() {
         log("Start");
         //Scheduler scheduler = new MyScheduler();
