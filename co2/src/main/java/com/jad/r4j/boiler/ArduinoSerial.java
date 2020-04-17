@@ -24,7 +24,7 @@ import java.util.stream.StreamSupport;
 @Slf4j
 public class ArduinoSerial implements AutoCloseable {
     private final Serial serial = SerialFactory.createInstance();
-    private Path path = Paths.get("/dev/ttyUSB1");
+    private Path path; // = Paths.get("/dev/ttyUSB1");
     private BufferedReader reader;
     private volatile boolean inited = false;
 
@@ -60,7 +60,7 @@ public class ArduinoSerial implements AutoCloseable {
                     .filter(dirPath -> dirPath.toFile().getName().startsWith("ttyUSB"))
                     .collect(Collectors.toList());
             if (!ttyUSBs.isEmpty()) {
-                path = ttyUSBs.get((int) (Math.random() * ttyUSBs.size()));
+                return ttyUSBs.get((int) (Math.random() * ttyUSBs.size()));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -118,13 +118,18 @@ public class ArduinoSerial implements AutoCloseable {
 
 
     //Test
-    public static void main(String[] args) {
-        ArduinoSerial arduinoSerial = new ArduinoSerial();
+    public static void main(String[] args) throws IOException {
+        /*ArduinoSerial arduinoSerial = new ArduinoSerial();
         Observable.interval(5, 25, TimeUnit.SECONDS, Schedulers.computation())
                 .map(i -> arduinoSerial.read())
                 .retry()
                 .doOnNext(System.out::println)
-                .blockingSubscribe();
+                .blockingSubscribe();*/
+
+        List<Path> ttyUSBs = Files.list(Paths.get("/dev"))
+                .filter(dirPath -> dirPath.toFile().getName().startsWith("ttys0"))
+                .collect(Collectors.toList());
+        System.out.println(ttyUSBs);
     }
 
     public static <T> Stream<T> enumerationAsStream(Enumeration<T> e) {
